@@ -48,7 +48,7 @@ namespace AttachmentsReversibleCopy
 
         #region IHelpPlugin
 
-        string IHelpPlugin.HelpUrl => "https://github.com/mkalinov/AttachmentsReversibleCopy";
+        string IHelpPlugin.HelpUrl => "https://github.com/mkalinov/DynamicsCrm_AttachmentsReversibleCopy";
 
         #endregion IHelpPlugin
 
