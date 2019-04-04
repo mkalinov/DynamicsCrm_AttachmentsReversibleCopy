@@ -1,5 +1,6 @@
 ## Attachments Copier 
 
+This tool designed for XrmToolBox
 
 Configuration Migration tool cannot copy file attachments.
 Attachments Copier is a tool dedicated to help migrate/move file attachments 
