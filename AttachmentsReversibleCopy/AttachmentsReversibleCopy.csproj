@@ -147,7 +147,9 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Blob\Logo_80x80.png" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="CrmFieldsAttacmentsReversibleCopy.resx">
       <DependentUpon>CrmFieldsAttacmentsReversibleCopy.cs</DependentUpon>
