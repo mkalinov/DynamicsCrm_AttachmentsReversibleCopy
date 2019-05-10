@@ -190,29 +190,39 @@ namespace AttachmentsReversibleCopy
             if (!GlobalHelper.isValidString(txtPackageUrl.Text)) return;
             else
             {
-                string unpackDirName = Path.GetFileNameWithoutExtension(txtPackageUrl.Text) + "_" + DateTime.Now.ToString("MM-dd-yyyy HH:mm").Replace(':', '-');
-                string unpackDirPath = Path.Combine(Path.GetDirectoryName(txtPackageUrl.Text), unpackDirName);
-                //uppack dir
-                //if directory exists: check with user if ok to delete the content
-                if (Directory.Exists(unpackDirPath))
+                try
                 {
-                    if (DialogResult.Yes == MessageBox.Show($"The directory {unpackDirPath} already exists. Is it ok to delete its content and uppack zip there?", "Confirm existing directory clean", MessageBoxButtons.YesNo))
+                    string unpackDirName = Path.GetFileNameWithoutExtension(txtPackageUrl.Text) + "_" + DateTime.Now.ToString("MM-dd-yyyy HH:mm").Replace(':', '-');
+                    string unpackDirPath = Path.Combine(Path.GetDirectoryName(txtPackageUrl.Text), unpackDirName);
+                    //uppack dir
+                    //if directory exists: check with user if ok to delete the content
+                    if (Directory.Exists(unpackDirPath))
                     {
-                        Directory.Delete(Path.GetDirectoryName(unpackDirPath));
+                        if (DialogResult.Yes == MessageBox.Show($"The directory {unpackDirPath} already exists. Is it ok to delete its content and uppack zip there?", "Confirm existing directory clean", MessageBoxButtons.YesNo))
+                        {
+                            Directory.Delete(Path.GetDirectoryName(unpackDirPath));
+                        }
+                        else
+                        {
+                            throw new Exception("Please change zip file name to create anoter directory.");
+                        }
                     }
-                    else
-                    {
-                        throw new Exception("Please change zip file name to create anoter directory.");
-                    }
+                    //create dir
+                    DirectoryInfo unPackDir = IOHelper.createDirectory(unpackDirPath);
+                    //unzip package to new dir
+                    ArchiveHelper.ExtractZipToDirectory(txtPackageUrl.Text, unPackDir.FullName);
+                    //check if data.xml exists
+                    string dataXmlPath = Path.Combine(unPackDir.FullName, "data.xml");
+                    if (!File.Exists(dataXmlPath)) throw new Exception($"No 'data.xml' found at {unPackDir.FullName}");
+                    else txtPackageUrl.Text = dataXmlPath;
+
                 }
-                //create dir
-                DirectoryInfo unPackDir = IOHelper.createDirectory(unpackDirPath);
-                //unzip package to new dir
-                ArchiveHelper.ExtractZipToDirectory(txtPackageUrl.Text, unPackDir.FullName);
-                //check if data.xml exists
-                string dataXmlPath = Path.Combine(unPackDir.FullName, "data.xml");
-                if (!File.Exists(dataXmlPath)) throw new Exception($"No 'data.xml' found at {unPackDir.FullName}");
-                else txtPackageUrl.Text = dataXmlPath;
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    txtPackageUrl.Text = string.Empty;
+                    return;
+                }
 
             }
         }
@@ -277,12 +287,6 @@ namespace AttachmentsReversibleCopy
             string message = string.Empty;
             List<Guid> ids = new List<Guid>();
 
-            //vlidate not the same portal for same connections
-            if (sourceDetail.ConnectionName == targetDetail.ConnectionName)
-            {
-                MessageBox.Show("Copy from source to  itself is not supported. Please select different target.", "WRONG SET");
-                return;
-            }
             //validate data file
             if (!GlobalHelper.isValidString(txtPackageUrl.Text) || !IOHelper.isFileExist(txtPackageUrl.Text, ".xml"))
             {
@@ -298,6 +302,22 @@ namespace AttachmentsReversibleCopy
                     return;
                 }
             }
+
+            
+            if (ReferenceEquals(sourceDetail, null) || ReferenceEquals(targetDetail, null))
+            {
+                MessageBox.Show("Please establish connections first.", "NO CONNECTION");
+                return;
+
+            }
+
+            //vlidate not the same portal for same connections
+            if (sourceDetail.ConnectionName == targetDetail.ConnectionName)
+            {
+                MessageBox.Show("Copy from source to  itself is not supported. Please select different target.", "WRONG SET");
+                return;
+            }
+
 
             if (DialogResult.Yes == MessageBox.Show("You're going to copy attachments \r\n from '" + sourceDetail.OrganizationFriendlyName + "' crm \r\n to '" + targetDetail.OrganizationFriendlyName + "' crm based on Configuration migration data file '" + txtPackageUrl.Text + "'. \r\n Recording of newly created attachemnts for potential rollback is " + (keepIds ? "'ON'" : "'OFF'") + " \r\n\n Execute?", "CONFIRM COPY", MessageBoxButtons.YesNo))
             {
