@@ -326,6 +326,7 @@ namespace AttachmentsReversibleCopy
                 int counter = 0;
                 int filesCount = 0;
                 int filesFailed = 0;
+                int tottalcount = 0;
                 isLog = false;
 
                 WorkAsync(new WorkAsyncInfo
@@ -335,8 +336,23 @@ namespace AttachmentsReversibleCopy
                     {
 
                         List<Guid> result = new List<Guid>();
-
                         DataEntities entities = IOHelper.DeserializeXmlFromFile<DataEntities>(datafilePath); //attachments
+
+                        //get total count
+                        foreach (DataEntity de in entities.entities)
+                        {
+                            if(!ReferenceEquals(de.RecordsCollection, null))
+                                tottalcount += de.RecordsCollection.Count;
+                        }
+
+                        //check if empty
+                        if (tottalcount == 0)
+                        {
+                            message = "Selected package has no records";
+                            throw new Exception ("Selected package has no records");
+                        }
+
+
                         foreach (DataEntity de in entities.entities)
                         {
                             counter += de.RecordsCollection.Count;
@@ -366,7 +382,7 @@ namespace AttachmentsReversibleCopy
                                     continue;
                                 }
                             }
-                            decimal p = (counter / entities.entities.Count) * 100;
+                            decimal p = (counter / tottalcount) * 100;
                             int? progress = (int?)Math.Round(p, 0);
                             SendMessageToStatusBar?.Invoke(this, new StatusBarMessageEventArgs(progress, "Copy in progress ..."));
 
@@ -374,7 +390,7 @@ namespace AttachmentsReversibleCopy
 
                         if (ids.Count > 0 && keepIds) IOHelper.SerializeObjectToXmlFile<List<Guid>>(ids, bkLocation);
 
-                        message = $"Attachments total - {counter}, \r\n  copied - {filesCount}, \r\n failed = {filesFailed} \r\n Attachments backed up - {ids.Count}";
+                        message = $" Records tottal = {tottalcount}, \r\n Attachments total - {counter}, \r\n  copied - {filesCount}, \r\n failed = {filesFailed} \r\n Attachments backed up - {ids.Count}";
 
                     },
                     PostWorkCallBack = e =>
