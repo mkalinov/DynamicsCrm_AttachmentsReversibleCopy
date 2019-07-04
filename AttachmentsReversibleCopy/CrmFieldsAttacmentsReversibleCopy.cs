@@ -327,6 +327,7 @@ namespace AttachmentsReversibleCopy
                 int filesCount = 0;
                 int filesFailed = 0;
                 int tottalcount = 0;
+                int tottalMatchesFoundInTarget = 0;
                 isLog = false;
 
                 WorkAsync(new WorkAsyncInfo
@@ -365,6 +366,7 @@ namespace AttachmentsReversibleCopy
                                 //check is target has same entity
                                 Entity targetMaster = targetService.Retrieve(de.name, new Guid(rec.id), new ColumnSet());
                                 if (ReferenceEquals(targetMaster, null)) continue;
+                                else tottalMatchesFoundInTarget++;
 
                                 //copy to target
                                 try
@@ -390,7 +392,7 @@ namespace AttachmentsReversibleCopy
 
                         if (ids.Count > 0 && keepIds) IOHelper.SerializeObjectToXmlFile<List<Guid>>(ids, bkLocation);
 
-                        message = $" Records tottal = {tottalcount}, \r\n Attachments total - {counter}, \r\n  copied - {filesCount}, \r\n failed = {filesFailed} \r\n Attachments backed up - {ids.Count}";
+                        message = $" Records tottal = {tottalcount}, \r\n Attachments total = {counter},\r\n total matches in target crm = {tottalMatchesFoundInTarget},\r\n copied = {filesCount}, \r\n failed = {filesFailed} \r\n Attachments backed up - {ids.Count}";
 
                     },
                     PostWorkCallBack = e =>
